@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import socket
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -28,12 +29,48 @@ import socketserver
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
-
+        payload = self.data.decode()
+        # print("payloapayloadd",payload)
+        payload_data = payload.split()
+        method,path = payload_data[0],payload_data[1]
+        if method == "GET"  :
+            try:
+                if path.endswith("html"):
+                    body = open("./www"+path,'r').read()
+                    self.request.send("HTTP/1.1 200 OK\r\n".encode())
+                    self.request.send("Content-Type: text/html;\r\n\r\n".encode())
+                    self.request.send(body.encode())
+                elif path.endswith("css"):
+                    body = open("./www"+path,'r').read()
+                    self.request.send("HTTP/1.1 200 OK\r\n".encode())
+                    self.request.send("Content-Type: text/CSS;\r\n\r\n".encode())
+                    self.request.send(body.encode())
+                
+                else: 
+                    if path.endswith('/') : 
+                        path += "index.html"
+                        if open("./www"+path,'r').read():
+                            body = open("./www"+path,'r').read()
+                            self.request.send("HTTP/1.1 200 OK\r\n".encode())
+                            self.request.send("Content-Type: text/html;\r\n\r\n".encode())
+                            self.request.send(body.encode())
+                        else: self.request.send(b"HTTP/1.0 404 Not Found") 
+                    else:
+                        path += "/index.html"
+                        if open("./www"+path,'r').read():
+                            body = open("./www"+path,'r').read()
+                            self.request.send("HTTP/1.1 301 Moved Permanently\r\n".encode())
+                            self.request.send("Content-Type: text/html;\r\n\r\n".encode())
+                            self.request.send(body.encode())
+                        else: self.request.send(b"HTTP/1.0 404 Not Found") 
+            except:
+                self.request.send(b"HTTP/1.0 404 Not Found")    
+        else:
+            self.request.send(b"HTTP/1.1 405 Methon Not Allowed")
+            
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
 
