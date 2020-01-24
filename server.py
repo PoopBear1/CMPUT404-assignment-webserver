@@ -45,14 +45,16 @@ class MyWebServer(socketserver.BaseRequestHandler):
                             body = open("./www"+path,'r').read()
                             self.request.send("HTTP/1.1 200 OK\r\n".encode())
                             self.request.send("Content-Type: text/html;\r\n".encode())
-                            self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
+                            self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n").encode())
+                            self.request.send("Connection : close \r\n\r\n".encode())
                             self.request.send(body.encode())
 
                         elif os.path.exists("./www"+path) and path.endswith("css"):
                             body = open("./www"+path,'r').read()
                             self.request.send("HTTP/1.1 200 OK\r\n".encode())
                             self.request.send("Content-Type: text/CSS;\r\n".encode())
-                            self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
+                            self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n").encode())
+                            self.request.send("Connection : close \r\n\r\n".encode())
                             self.request.send(body.encode())
 
                         elif os.path.exists("./www"+path+"index.html") and path.endswith('/'):
@@ -61,7 +63,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
                                 body = open("./www"+path,'r').read()
                                 self.request.send("HTTP/1.1 200 OK\r\n".encode())
                                 self.request.send("Content-Type: text/html;\r\n".encode())
-                                self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
+                                self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n").encode())
+                                self.request.send("Connection : close \r\n\r\n".encode())
                                 self.request.send(body.encode())
                             else: self.request.send("HTTP/1.1 404 Not Found".encode())  
                 
