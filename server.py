@@ -39,44 +39,48 @@ class MyWebServer(socketserver.BaseRequestHandler):
             method,path = payload_data[0],payload_data[1]
             
             if method == "GET":
-                    if os.path.exists("./www"+path) and path.endswith("html"):
-                        body = open("./www"+path,'r').read()
-                        self.request.send("HTTP/1.1 200 OK\r\n".encode())
-                        self.request.send("Content-Type: text/html;\r\n".encode())
-                        self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
-                        self.request.send(body.encode())
-
-                    elif os.path.exists("./www"+path) and path.endswith("css"):
-                        body = open("./www"+path,'r').read()
-                        self.request.send("HTTP/1.1 200 OK\r\n".encode())
-                        self.request.send("Content-Type: text/CSS;\r\n".encode())
-                        self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
-                        self.request.send(body.encode())
-
-                    elif os.path.exists("./www"+path+"index.html") and path.endswith('/'):
-                        path += "index.html"
-                        if open("./www"+path,'r').read():
+                
+                    if self.check_path(path):
+                        if os.path.exists("./www"+path) and path.endswith("html"):
                             body = open("./www"+path,'r').read()
                             self.request.send("HTTP/1.1 200 OK\r\n".encode())
                             self.request.send("Content-Type: text/html;\r\n".encode())
                             self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
                             self.request.send(body.encode())
-                        else: self.request.send("HTTP/1.1 404 Not Found".encode())  
-            
-                    else:
-                        try: 
-                            body = open('./www'+path+'/index.html','r').read()
-                            self.request.send("HTTP/1.1 301 Moved Permanently\r\n".encode())
-                            self.request.send("Content-Type: text/html;\r\n".encode())
-                            addrs = "Location: http://127.0.0.1:8080"+path+'/\r\n\r\n'
-                            self.request.send(addrs.encode())
 
-                        except:
-                            self.request.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())  
+                        elif os.path.exists("./www"+path) and path.endswith("css"):
+                            body = open("./www"+path,'r').read()
+                            self.request.send("HTTP/1.1 200 OK\r\n".encode())
+                            self.request.send("Content-Type: text/CSS;\r\n".encode())
+                            self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
+                            self.request.send(body.encode())
 
-            else:
-                self.request.send("HTTP/1.1 405 Method Not Allowed".encode())
+                        elif os.path.exists("./www"+path+"index.html") and path.endswith('/'):
+                            path += "index.html"
+                            if open("./www"+path,'r').read():
+                                body = open("./www"+path,'r').read()
+                                self.request.send("HTTP/1.1 200 OK\r\n".encode())
+                                self.request.send("Content-Type: text/html;\r\n".encode())
+                                self.request.send("{} {} {}".format("Content-length: ",len(body),"\r\n\r\n").encode())
+                                self.request.send(body.encode())
+                            else: self.request.send("HTTP/1.1 404 Not Found".encode())  
+                
+                        else:
+                                
+                            try: 
+                                body = open('./www'+path+'/index.html','r').read()
+                                self.request.send("HTTP/1.1 301 Moved Permanently\r\n".encode())
+                                self.request.send("Content-Type: text/html;\r\n".encode())
+                                addrs = "Location: http://127.0.0.1:8080"+path+'/\r\n\r\n'
+                                self.request.send(addrs.encode())
 
+                            except:
+                                self.request.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())  
+                    else : self.request.send("HTTP/1.1 404 Not Found\r\n\r\n".encode())  
+            else:self.request.send("HTTP/1.1 405 Method Not Allowed".encode())
+    
+    def check_path(self,path):
+        return os.path.realpath(os.getcwd()+'/www' +path).startswith(os.getcwd()+'/www')
 
             
 if __name__ == "__main__":
